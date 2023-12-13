@@ -59,25 +59,25 @@ def download_course_details(classroom_service, course_id, folder_path, credentia
 
 def download_drive_file(classroom_service, file_id, folder_path, credentials):
     drive_service = build('drive', 'v3', credentials=credentials)
-    
-    request = drive_service.files().get_media(fileId=file_id)
-    file_metadata = drive_service.files().get(fileId=file_id).execute()
-
-    if 'mimeType' in file_metadata and 'application/vnd.google-apps' in file_metadata['mimeType']:
-        request.uri = f"https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf"
-        file_path = os.path.join(folder_path, f"{file_id}_{file_metadata['name']}.pdf")
-    else:
-        file_path = os.path.join(folder_path, f"{file_id}_{file_metadata['name']}")
-
     try:
+        request = drive_service.files().get_media(fileId=file_id)
+        file_metadata = drive_service.files().get(fileId=file_id).execute()
+
+        if 'mimeType' in file_metadata and 'application/vnd.google-apps' in file_metadata['mimeType']:
+            request.uri = f"https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf"
+            file_path = os.path.join(folder_path, f"{file_id}_{file_metadata['name']}.pdf")
+        else:
+            file_path = os.path.join(folder_path, f"{file_id}_{file_metadata['name']}")
+
         with open(file_path, 'wb') as file:
             downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
             done = False
             while not done:
                 _, done = downloader.next_chunk()
+
     except HttpError as e:
         if e.resp.status == 404:
-            print(f"File not found: {file_id}")
+            print(f"File not found: {file_id}. Skipping...")
         else:
             print(f"HTTP error: {e}")
     except Exception as e:
