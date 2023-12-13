@@ -1,3 +1,6 @@
+# Description:
+   This program downloads all the contents from google classrooms
+
 # Requirements
 - Latest version of Python
 - Latest version of Pip
