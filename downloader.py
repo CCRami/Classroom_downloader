@@ -7,6 +7,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 
 
+# Define necessary scopes for Google Classroom
 SCOPES = [
     'https://www.googleapis.com/auth/classroom.courses.readonly',
     'https://www.googleapis.com/auth/classroom.coursework.me',
@@ -62,7 +63,6 @@ def download_drive_file(classroom_service, file_id, folder_path, credentials):
     try:
         request = drive_service.files().get_media(fileId=file_id)
         file_metadata = drive_service.files().get(fileId=file_id).execute()
-
         if 'mimeType' in file_metadata and 'application/vnd.google-apps' in file_metadata['mimeType']:
             request.uri = f"https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf"
             file_path = os.path.join(folder_path, f"{file_id}_{file_metadata['name']}.pdf")
