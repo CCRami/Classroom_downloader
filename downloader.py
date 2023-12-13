@@ -4,9 +4,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 import io
 from google.oauth2.credentials import Credentials
+from googleapiclient.errors import HttpError
 
 
-# Define necessary scopes for Google Classroom
 SCOPES = [
     'https://www.googleapis.com/auth/classroom.courses.readonly',
     'https://www.googleapis.com/auth/classroom.coursework.me',
@@ -69,11 +69,19 @@ def download_drive_file(classroom_service, file_id, folder_path, credentials):
     else:
         file_path = os.path.join(folder_path, f"{file_id}_{file_metadata['name']}")
 
-    with open(file_path, 'wb') as file:
-        downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
-        done = False
-        while not done:
-            _, done = downloader.next_chunk()
+    try:
+        with open(file_path, 'wb') as file:
+            downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
+            done = False
+            while not done:
+                _, done = downloader.next_chunk()
+    except HttpError as e:
+        if e.resp.status == 404:
+            print(f"File not found: {file_id}")
+        else:
+            print(f"HTTP error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
 
 def main():
     credentials = authenticate()
